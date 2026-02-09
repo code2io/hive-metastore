@@ -5,7 +5,7 @@ WORKDIR /opt
 ENV HADOOP_VERSION=3.2.0
 ENV METASTORE_VERSION=3.0.0
 
-RUN apk add --no-cache netcat-openbsd curl
+RUN apk add --no-cache netcat-openbsd curl bash
 
 ENV HADOOP_HOME=/opt/hadoop-${HADOOP_VERSION}
 ENV HIVE_HOME=/opt/apache-hive-metastore-${METASTORE_VERSION}-bin
