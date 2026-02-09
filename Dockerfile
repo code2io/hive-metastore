@@ -5,7 +5,7 @@ WORKDIR /opt
 ENV HADOOP_VERSION=3.2.0
 ENV METASTORE_VERSION=3.0.0
 
-RUN apt-get update && apt-get install -y netcat curl
+RUN apk add --no-cache netcat-openbsd curl
 
 ENV HADOOP_HOME=/opt/hadoop-${HADOOP_VERSION}
 ENV HIVE_HOME=/opt/apache-hive-metastore-${METASTORE_VERSION}-bin
@@ -21,8 +21,8 @@ RUN curl -L https://downloads.apache.org/hive/hive-standalone-metastore-${METAST
 
 COPY scripts/entrypoint.sh /entrypoint.sh
 
-RUN groupadd -r hive --gid=1000 && \
-    useradd -r -g hive --uid=1000 -d ${HIVE_HOME} hive && \
+RUN addgroup -g 1000 -S hive && \
+    adduser -S -u 1000 -G hive -h ${HIVE_HOME} hive && \
     chown hive:hive -R ${HIVE_HOME} && \
     chown hive:hive /entrypoint.sh && chmod +x /entrypoint.sh
 
