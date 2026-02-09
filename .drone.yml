@@ -20,28 +20,11 @@ steps:
       - name: artifacts
         path: /artifacts
 
-  - name: code-build
-    pull: always
-    image: code2io/ci-mvn-build:${mvn_build_plugin_ver}
-    environment:
-      REPO: ${DRONE_REPO_NAME}
-      GOOGLE_CLOUD_PROJECT_ID:
-        from_secret: GOOGLE_CLOUD_PROJECT_ID
-      CONTAINER_REGISTRY_LOCATION:
-        from_secret: CONTAINER_REGISTRY_LOCATION
-    volumes:
-      - name: gcp-ar-auth-secret
-        path: /gcp
-      - name: cache
-        path: /cache
-    depends_on:
-      - clone
-
   - name: security-scan
     pull: always
     image: code2io/ci-trivy:${trivy_plugin_ver}
     depends_on:
-      - code-build
+      - set-version
 
   - name: image-build-push
     pull: always
