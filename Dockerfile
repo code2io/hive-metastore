@@ -1,4 +1,4 @@
-FROM openjdk:8-jre-slim-buster
+FROM amazoncorretto:8-alpine3.23-jre
 
 WORKDIR /opt
 
