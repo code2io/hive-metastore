@@ -1,0 +1,162 @@
+kind: pipeline
+type: kubernetes
+name: build
+
+trigger:
+  event:
+    - push
+    - custom
+    - tag
+
+steps:
+  - name: set-version
+    pull: always
+    image: code2io/ci-set-version:${set_version_plugin_ver}
+    environment:
+      BRANCH: ${DRONE_COMMIT_BRANCH}
+      TAG: ${DRONE_TAG}
+      REPO: ${DRONE_REPO_NAME}
+    volumes:
+      - name: artifacts
+        path: /artifacts
+
+  - name: code-build
+    pull: always
+    image: code2io/ci-mvn-build:${mvn_build_plugin_ver}
+    environment:
+      REPO: ${DRONE_REPO_NAME}
+      GOOGLE_CLOUD_PROJECT_ID:
+        from_secret: GOOGLE_CLOUD_PROJECT_ID
+      CONTAINER_REGISTRY_LOCATION:
+        from_secret: CONTAINER_REGISTRY_LOCATION
+    volumes:
+      - name: gcp-ar-auth-secret
+        path: /gcp
+      - name: cache
+        path: /cache
+    depends_on:
+      - clone
+
+  - name: security-scan
+    pull: always
+    image: code2io/ci-trivy:${trivy_plugin_ver}
+    depends_on:
+      - code-build
+
+  - name: image-build-push
+    pull: always
+    privileged: true
+    image: code2io/ci-image-build-push:${image_build_push_plugin_ver}
+    environment:
+      IMAGE_NAME: ${DRONE_REPO_NAME}
+      CONTAINER_REGISTRY:
+        from_secret: CONTAINER_REGISTRY
+      REGISTRY_AUTH_FILE:
+        from_secret: REGISTRY_AUTH_FILE
+    volumes:
+      - name: artifacts
+        path: /artifacts
+      - name: gcp-ar-auth-secret
+        path: /gcp
+    depends_on:
+      - security-scan
+      - set-version
+
+  - name: deploy
+    pull: always
+    image: code2io/ci-deploy:${deploy_plugin_ver}
+    environment:
+      CONTAINER_NAME: ${DRONE_REPO_NAME}
+      REVISION: ${DRONE_COMMIT_SHA}
+      AZURE_CLIENT_ID:
+        from_secret: AZURE_CLIENT_ID
+      AZURE_CLIENT_SECRET:
+        from_secret: AZURE_CLIENT_SECRET
+      AZURE_TENANT_ID:
+        from_secret: AZURE_TENANT_ID
+      AZURE_RESOURCE_GROUP:
+        from_secret: AZURE_RESOURCE_GROUP
+    volumes:
+      - name: artifacts
+        path: /artifacts
+      - name: gcp-auth
+        path: /gcp
+    depends_on:
+      - image-build-push
+
+  - name: smoke-tests
+    pull: always
+    image: code2io/ci-utils:${utils_plugin_ver}
+    environment:
+      DRONE_API_URL: "drone:8080"
+      DRONE_HTTP_PROTO: "http"
+      REPO_OWNER: "${DRONE_REPO_OWNER}"
+      REPO_NAME: "e2e-tests"
+      DRONE_AUTH_TOKEN:
+        from_secret: DRONE_AUTH_TOKEN
+      BUILD_ID: "${DRONE_BUILD_NUMBER}"
+    commands:
+      - python3 /app/run-smoke-test.py
+    volumes:
+      - name: artifacts
+        path: /artifacts
+    depends_on:
+      - deploy
+
+  - name: notify-success
+    pull: always
+    image: code2io/ci-notify:${notify_plugin_ver}
+    environment:
+      STATUS: "SUCCESS"
+      ACTOR: ${DRONE_COMMIT_AUTHOR}
+      SLACK_APP_TOKEN:
+        from_secret: SLACK_APP_TOKEN
+      HOST_URL: ${DRONE_SYSTEM_HOST}
+      REPOSITORY_NAME: ${DRONE_REPO_NAME}
+      BUILD_ID: ${DRONE_BUILD_NUMBER}
+    volumes:
+      - name: artifacts
+        path: /artifacts
+    when:
+      status:
+        - success
+    depends_on:
+      - smoke-tests
+
+  - name: notify-failure
+    pull: always
+    image: code2io/ci-notify:${notify_plugin_ver}
+    environment:
+      STATUS: "FAILURE"
+      ACTOR: ${DRONE_COMMIT_AUTHOR}
+      SLACK_APP_TOKEN:
+        from_secret: SLACK_APP_TOKEN
+      HOST_URL: ${DRONE_SYSTEM_HOST}
+      REPOSITORY_NAME: ${DRONE_REPO_NAME}
+      BUILD_ID: ${DRONE_BUILD_NUMBER}
+    volumes:
+      - name: artifacts
+        path: /artifacts
+    when:
+      status:
+        - failure
+    depends_on:
+      - smoke-tests
+
+volumes:
+  - name: gcp-ar-auth-secret
+    config_map:
+      name: gcp-artifact-registry-auth
+      default_mode: 420     # same as 644 in octal, or u+w,a+r
+      optional: false
+  - name: gcp-auth
+    config_map:
+      name: gcp-auth
+      default_mode: 420     # same as 644 in octal, or u+w,a+r
+      optional: false
+  - name: cache
+    claim:
+      name: drone-pipeline-cache
+      read_only: false
+  - name: artifacts
+    temp: {}
