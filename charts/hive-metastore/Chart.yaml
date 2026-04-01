@@ -4,7 +4,7 @@ description: |-
   Helm chart to deploy [hive-metastore](https://hive.apache.org/).
 type: application
 version: 0.0.1
-appVersion: 3.0.0
+appVersion: 4.1.0
 home: https://github.com/bitsondatadev/hive-metastore/chart/ 
 icon: https://hive.apache.org/images/hive_logo_medium.jpg
 maintainers:

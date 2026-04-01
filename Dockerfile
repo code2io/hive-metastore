@@ -1,16 +1,16 @@
-FROM amazoncorretto:8-alpine3.23-jre
+FROM amazoncorretto:11-alpine3.23-jre
 
 WORKDIR /opt
 
-ENV HADOOP_VERSION=3.2.0
-ENV METASTORE_VERSION=3.0.0
+ENV HADOOP_VERSION=3.3.6
+ENV METASTORE_VERSION=4.1.0
 
 RUN apk add --no-cache netcat-openbsd curl bash
 
 ENV HADOOP_HOME=/opt/hadoop-${HADOOP_VERSION}
-ENV HIVE_HOME=/opt/apache-hive-metastore-${METASTORE_VERSION}-bin
+ENV HIVE_HOME=/opt/hive-standalone-metastore-${METASTORE_VERSION}-bin
 
-RUN curl -L https://downloads.apache.org/hive/hive-standalone-metastore-${METASTORE_VERSION}/hive-standalone-metastore-${METASTORE_VERSION}-bin.tar.gz | tar zxf - && \
+RUN curl -L https://archive.apache.org/dist/hive/hive-standalone-metastore-${METASTORE_VERSION}/hive-standalone-metastore-${METASTORE_VERSION}-bin.tar.gz | tar zxf - && \
     curl -L https://archive.apache.org/dist/hadoop/common/hadoop-${HADOOP_VERSION}/hadoop-${HADOOP_VERSION}.tar.gz | tar zxf - && \
     curl -L https://dev.mysql.com/get/Downloads/Connector-J/mysql-connector-java-8.0.19.tar.gz | tar zxf - && \
     curl -L --output postgresql-42.4.0.jar https://jdbc.postgresql.org/download/postgresql-42.4.0.jar && \

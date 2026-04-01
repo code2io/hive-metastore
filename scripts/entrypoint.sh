@@ -1,10 +1,12 @@
 #!/bin/sh
 
-export HADOOP_HOME=/opt/hadoop-3.2.0
-export HADOOP_CLASSPATH=${HADOOP_HOME}/share/hadoop/tools/lib/aws-java-sdk-bundle-1.11.375.jar:${HADOOP_HOME}/share/hadoop/tools/lib/hadoop-aws-3.2.0.jar
+export HADOOP_HOME=/opt/hadoop-${HADOOP_VERSION:-3.3.6}
+export HADOOP_CLASSPATH=${HADOOP_HOME}/share/hadoop/tools/lib/aws-java-sdk-bundle-*.jar:${HADOOP_HOME}/share/hadoop/tools/lib/hadoop-aws-*.jar
 export JAVA_HOME=/usr/lib/jvm/default-jvm/jre
 export METASTORE_DB_HOSTNAME=${METASTORE_DB_HOSTNAME:-localhost}
 export METASTORE_TYPE=${METASTORE_TYPE:-mysql}
+
+HIVE_HOME=/opt/hive-standalone-metastore-${METASTORE_VERSION:-4.1.0}-bin
 
 MYSQL='mysql'
 POSTGRES='postgres'
@@ -20,8 +22,8 @@ if [ "${METASTORE_TYPE}" = "${MYSQL}" ]; then
   echo "Database on ${METASTORE_DB_HOSTNAME}:${METASTORE_DB_PORT} started"
   echo "Init apache hive metastore on ${METASTORE_DB_HOSTNAME}:${METASTORE_DB_PORT}"
 
-  /opt/apache-hive-metastore-3.0.0-bin/bin/schematool -initSchema -dbType mysql
-  /opt/apache-hive-metastore-3.0.0-bin/bin/start-metastore
+  ${HIVE_HOME}/bin/schematool -initSchema -dbType mysql
+  ${HIVE_HOME}/bin/start-metastore
 fi
 
 if [ "${METASTORE_TYPE}" = "${POSTGRES}" ]; then
@@ -35,6 +37,6 @@ if [ "${METASTORE_TYPE}" = "${POSTGRES}" ]; then
   echo "Database on ${METASTORE_DB_HOSTNAME}:${METASTORE_DB_PORT} started"
   echo "Init apache hive metastore on ${METASTORE_DB_HOSTNAME}:${METASTORE_DB_PORT}"
 
-  /opt/apache-hive-metastore-3.0.0-bin/bin/schematool -initSchema -dbType postgres
-  /opt/apache-hive-metastore-3.0.0-bin/bin/start-metastore
+  ${HIVE_HOME}/bin/schematool -initSchema -dbType postgres
+  ${HIVE_HOME}/bin/start-metastore
 fi
