@@ -1,4 +1,4 @@
-FROM amazoncorretto:11-alpine3.23-jre
+FROM eclipse-temurin:11-jre-alpine-3.23
 
 WORKDIR /opt
 
