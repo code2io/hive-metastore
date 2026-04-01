@@ -6,7 +6,7 @@ export JAVA_HOME=/usr/lib/jvm/default-jvm/jre
 export METASTORE_DB_HOSTNAME=${METASTORE_DB_HOSTNAME:-localhost}
 export METASTORE_TYPE=${METASTORE_TYPE:-mysql}
 
-HIVE_HOME=/opt/hive-standalone-metastore-${METASTORE_VERSION:-4.1.0}-bin
+HIVE_HOME=/opt/apache-hive-metastore-${METASTORE_VERSION:-4.1.0}-bin
 
 MYSQL='mysql'
 POSTGRES='postgres'
