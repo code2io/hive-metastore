@@ -1,5 +1,7 @@
 FROM apache/hive:standalone-metastore-4.1.0
 
+ENV JAVA_HOME=/opt/java/openjdk
+
 USER root
 
 RUN curl -L https://dev.mysql.com/get/Downloads/Connector-J/mysql-connector-java-8.0.19.tar.gz | tar zxf - && \
