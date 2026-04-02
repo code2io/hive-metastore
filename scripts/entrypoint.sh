@@ -14,7 +14,7 @@ if [ "${METASTORE_TYPE}" = "${MYSQL}" ]; then
     sleep 1
   done
   echo "Database on ${METASTORE_DB_HOSTNAME}:${METASTORE_DB_PORT} started"
-  /opt/hive/bin/schematool -initSchema -dbType mysql
+  /opt/hive/bin/schematool -initOrUpgradeSchema -dbType mysql
   /opt/hive/bin/start-metastore
 fi
 
@@ -26,6 +26,6 @@ if [ "${METASTORE_TYPE}" = "${POSTGRES}" ]; then
     sleep 1
   done
   echo "Database on ${METASTORE_DB_HOSTNAME}:${METASTORE_DB_PORT} started"
-  /opt/hive/bin/schematool -initSchema -dbType postgres
+  /opt/hive/bin/schematool -initOrUpgradeSchema -dbType postgres
   /opt/hive/bin/start-metastore
 fi
