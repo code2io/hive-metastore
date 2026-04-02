@@ -4,6 +4,8 @@ ENV JAVA_HOME=/opt/java/openjdk
 
 USER root
 
+RUN apt-get update && apt-get install -y --no-install-recommends netcat-openbsd && rm -rf /var/lib/apt/lists/*
+
 RUN curl -L https://dev.mysql.com/get/Downloads/Connector-J/mysql-connector-java-8.0.19.tar.gz | tar zxf - && \
     cp mysql-connector-java-8.0.19/mysql-connector-java-8.0.19.jar /opt/hive/lib/ && \
     rm -rf mysql-connector-java-8.0.19 && \
