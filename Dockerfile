@@ -1,30 +1,20 @@
-FROM amazoncorretto:8-alpine3.23-jre
+FROM apache/hive:standalone-metastore-4.1.0
 
-WORKDIR /opt
+ENV JAVA_HOME=/opt/java/openjdk
 
-ENV HADOOP_VERSION=3.2.0
-ENV METASTORE_VERSION=3.0.0
+USER root
 
-RUN apk add --no-cache netcat-openbsd curl bash
+RUN microdnf install -y nc && microdnf clean all
 
-ENV HADOOP_HOME=/opt/hadoop-${HADOOP_VERSION}
-ENV HIVE_HOME=/opt/apache-hive-metastore-${METASTORE_VERSION}-bin
-
-RUN curl -L https://downloads.apache.org/hive/hive-standalone-metastore-${METASTORE_VERSION}/hive-standalone-metastore-${METASTORE_VERSION}-bin.tar.gz | tar zxf - && \
-    curl -L https://archive.apache.org/dist/hadoop/common/hadoop-${HADOOP_VERSION}/hadoop-${HADOOP_VERSION}.tar.gz | tar zxf - && \
-    curl -L https://dev.mysql.com/get/Downloads/Connector-J/mysql-connector-java-8.0.19.tar.gz | tar zxf - && \
-    curl -L --output postgresql-42.4.0.jar https://jdbc.postgresql.org/download/postgresql-42.4.0.jar && \
-    cp mysql-connector-java-8.0.19/mysql-connector-java-8.0.19.jar ${HIVE_HOME}/lib/ && \
-    cp postgresql-42.4.0.jar ${HIVE_HOME}/lib/ && \
-    rm -rf  mysql-connector-java-8.0.19 && \
-    rm -rf  postgresql-42.4.0.jar
+RUN curl -L https://dev.mysql.com/get/Downloads/Connector-J/mysql-connector-java-8.0.19.tar.gz | tar zxf - && \
+    cp mysql-connector-java-8.0.19/mysql-connector-java-8.0.19.jar /opt/hive/lib/ && \
+    rm -rf mysql-connector-java-8.0.19 && \
+    curl -L --output /opt/hive/lib/postgresql-42.4.0.jar https://jdbc.postgresql.org/download/postgresql-42.4.0.jar && \
+    curl -L --output /opt/hive/lib/hadoop-aws-3.4.1.jar https://repo1.maven.org/maven2/org/apache/hadoop/hadoop-aws/3.4.1/hadoop-aws-3.4.1.jar && \
+    curl -L --output /opt/hive/lib/aws-java-sdk-bundle-2.24.6.jar https://repo1.maven.org/maven2/software/amazon/awssdk/bundle/2.24.6/bundle-2.24.6.jar
 
 COPY scripts/entrypoint.sh /entrypoint.sh
-
-RUN addgroup -g 1000 -S hive && \
-    adduser -S -u 1000 -G hive -h ${HIVE_HOME} hive && \
-    chown hive:hive -R ${HIVE_HOME} && \
-    chown hive:hive /entrypoint.sh && chmod +x /entrypoint.sh
+RUN chmod +x /entrypoint.sh
 
 USER hive
 EXPOSE 9083
