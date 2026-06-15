@@ -1,10 +1,20 @@
 FROM apache/hive:standalone-metastore-4.1.0
 
+LABEL name="peaka/hive-metastore" \
+      vendor="Peaka" \
+      version="1.0.0" \
+      release="1" \
+      summary="hive-metastore — Peaka platform Hive Metastore" \
+      description="Apache Hive standalone metastore for the Peaka data integration platform, on a Red Hat (RHEL9) base." \
+      maintainer="furkan@peaka.com"
+
 ENV JAVA_HOME=/opt/java/openjdk
 
 USER root
 
 RUN microdnf install -y nc && microdnf clean all
+
+RUN microdnf upgrade -y && microdnf clean all
 
 RUN curl -L https://dev.mysql.com/get/Downloads/Connector-J/mysql-connector-java-8.0.19.tar.gz | tar zxf - && \
     cp mysql-connector-java-8.0.19/mysql-connector-java-8.0.19.jar /opt/hive/lib/ && \
@@ -15,6 +25,8 @@ RUN curl -L https://dev.mysql.com/get/Downloads/Connector-J/mysql-connector-java
 
 COPY scripts/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
+
+COPY licenses/ /licenses/
 
 USER hive
 EXPOSE 9083
