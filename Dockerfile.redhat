@@ -23,9 +23,12 @@ RUN microdnf upgrade -y && microdnf clean all
 RUN curl -L https://dev.mysql.com/get/Downloads/Connector-J/mysql-connector-java-8.0.19.tar.gz | tar zxf - && \
     cp mysql-connector-java-8.0.19/mysql-connector-java-8.0.19.jar /opt/hive/lib/ && \
     rm -rf mysql-connector-java-8.0.19 && \
-    curl -L --output /opt/hive/lib/postgresql-42.4.0.jar https://jdbc.postgresql.org/download/postgresql-42.4.0.jar && \
+    curl -L --output /opt/hive/lib/postgresql-42.7.14.jar https://jdbc.postgresql.org/download/postgresql-42.7.14.jar && \
     curl -L --output /opt/hive/lib/hadoop-aws-3.4.1.jar https://repo1.maven.org/maven2/org/apache/hadoop/hadoop-aws/3.4.1/hadoop-aws-3.4.1.jar && \
-    curl -L --output /opt/hive/lib/aws-java-sdk-bundle-2.24.6.jar https://repo1.maven.org/maven2/software/amazon/awssdk/bundle/2.24.6/bundle-2.24.6.jar
+    curl -L --output /opt/hive/lib/aws-java-sdk-bundle-2.54.20.jar https://repo1.maven.org/maven2/software/amazon/awssdk/bundle/2.54.20/bundle-2.54.20.jar
+
+COPY scripts/fix-jars.sh /tmp/fix-jars.sh
+RUN sh /tmp/fix-jars.sh && rm /tmp/fix-jars.sh
 
 COPY scripts/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
